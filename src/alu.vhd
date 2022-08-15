@@ -32,109 +32,69 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity alu is
-    Port ( I_imm : in STD_LOGIC_VECTOR (11 downto 0);
-           I_aluop : in STD_LOGIC_VECTOR (16 downto 0); --MIGHT NOT WORK, TEMPORARY SOLUTION
-           I_dataA : in STD_LOGIC_VECTOR (31 downto 0);
-           I_dataB : in STD_LOGIC_VECTOR (31 downto 0);
-           I_en : in STD_LOGIC;
-           I_clk : in STD_LOGIC;
-           I_writen : in STD_LOGIC;
-           I_pc : in STD_LOGIC_VECTOR (31 downto 0);
-           O_out : out STD_LOGIC_VECTOR (31 downto 0);
-           O_writen : out STD_LOGIC;
-           O_branch : out STD_LOGIC);
+    Port (I_dataA : in std_logic_vector (31 downto 0);
+           I_dataB : in std_logic_vector (31 downto 0);
+           I_alufunc : in std_logic_vector (3 downto 0);
+           O_result : out std_logic_vector (31 downto 0);
+           O_zero : out std_logic);
+           
+           
 end alu;
 
 architecture Behavioral of alu is
 
-signal s_result: STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-signal extended_imm: std_logic_vector(31 downto 0);
-
-
 begin
 
-extended_imm <= std_logic_vector(resize(signed(I_imm), extended_imm'length)); 
-
-process (I_clk)
-
-begin
-
-    if rising_edge(I_clk) and I_en = '1' then
-        
-        case I_aluop(6 downto 0) is 
-            
-            when "0010011" => --I-type instruction, arithmetic/logic
-            
-                case I_aluop(9 downto 7) is
-                
-                    when "000" => --ADDI operation
-                 
-                        s_result(31 downto 0) <= std_logic_vector(signed(I_dataA) + signed(extended_imm));
-                        
-                   when "100" => --XORI operation    
-     
-                        s_result(31 downto 0) <= std_logic_vector(signed(I_dataA) xor signed(extended_imm));
-                        
-                   when "110" => --ORI operation    
-               
-                        s_result(31 downto 0) <= std_logic_vector(signed(I_dataA) or signed(extended_imm));
-                        
-                  when "111" => --ANDI operation    
-
-                        s_result(31 downto 0) <= std_logic_vector(signed(I_dataA) and signed(extended_imm));
-                        
-                  when others => null;
- 
-               end case;  
-            
-            when "0000011" => --I-type instruction, loads
-                  
-                
-                   s_result (31 downto 0) <= std_logic_vector(signed(I_dataA) + signed(extended_imm)); --Computing the byte address from where to load data in memory
-                    --Might need to make this the same output as the O_out, this can then be accounted for later in the pipeline with control units dictating whether or not the registers are being written to. That way, we have only one datapath active at a time (either we are writing to the registers, or we are sending data to memory for addressing)
-                        
-       
-            when "0110011" => --R-type instruction
-                
-                case I_aluop(9 downto 7) is 
-                    
-                    when "000" =>
-                        
-                        if I_aluop(16 downto 10) = "0000000" then --ADD operation
-                            
-                            s_result(31 downto 0) <= std_logic_vector(signed(I_dataA) + signed(I_dataB)); --Ignoring overflows
-
-                        else --SUB operation
-                            
-                            s_result(31 downto 0) <= std_logic_vector(signed(I_dataA) - signed(I_dataB)); --Subtraction defined to be rs1 - rs2   
-                             
-                        end if;   
-                        
-                    when "100" => --XOR operation
-                        
-                        s_result(31 downto 0) <= std_logic_vector(signed(I_dataA) xor signed(I_dataB));
+    process (I_dataA, I_dataB, I_alufunc)
     
-                    when "110" => --OR operation
-                    
-                        s_result(31 downto 0) <= std_logic_vector(signed(I_dataA) or signed(I_dataB));
-          
-                    when "111" => --AND operation
-                        
-                        s_result(31 downto 0) <= std_logic_vector(signed(I_dataA) and signed(I_dataB));  
-                        
-                    when others => null;
-                    
-                    end case;
+    begin
+        
             
-            when others => null;
-                        
-        end case;
-        
-        O_out <= s_result;
-        
-   end if;
+            case I_alufunc is
                 
-end process;
+                when "0000" => O_result <= I_dataA and I_dataB;  --Bitwise and 
+                
+                when "0001" => O_result <= I_dataA or I_dataB;  --Bitwise or
+  
+                when "1100" => O_result <= I_dataA xor I_dataB;  --Bitwise xor
+         
+                when "0010" => O_result <= std_logic_vector(signed(I_dataA) + signed(I_dataB));  --Addition
 
+                when "0110" => O_result <= std_logic_vector(signed(I_dataA) - signed(I_dataB));  --Subtraction
 
+                when "0111" => --SLT
+                    
+                    if signed(I_dataB) > signed(I_dataA) then
+                        
+                        O_result <= X"00000001";
+                        
+                    else
+                    
+                        O_result <= X"00000000";
+                     
+                    end if;
+            
+                when "1111" => --SLTU
+                       
+                       if unsigned(I_dataB) > unsigned(I_dataA) then
+                            
+                            O_result <= X"00000001";
+                            
+                        else
+                        
+                            O_result <= X"00000000";
+                            
+                        end if;
+                    
+                when "1000" => --LUI
+
+                     O_result <= I_dataA;
+                
+
+                when others => null;
+              
+            end case;
+    
+    end process;
+    
 end Behavioral;
