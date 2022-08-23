@@ -21,9 +21,6 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
@@ -34,15 +31,15 @@ use IEEE.NUMERIC_STD.ALL;
 entity fetch is
     Port ( I_clk : in STD_LOGIC;
            I_PCSel : in STD_LOGIC_VECTOR (1 downto 0);
-           I_BrJAL : in STD_LOGIC_VECTOR (31 downto 0);
+           I_Br : in STD_LOGIC_VECTOR (31 downto 0);
+           I_JAL : in STD_LOGIC_VECTOR (31 downto 0);
            I_JALR : in STD_LOGIC_VECTOR (31 downto 0);
-           O_ins : in STD_LOGIC_VECTOR (31 downto 0));
+           O_ins : out STD_LOGIC_VECTOR (31 downto 0));
 end fetch;
 
 architecture Behavioral of fetch is
 
 signal PC : std_logic_vector(31 downto 0);
-
 
 begin
 
@@ -53,19 +50,23 @@ begin
         
             case I_PCSel is
             
-                when "01" => PC <= I_BrJAL;
+                when "00" => PC <= std_logic_vector(unsigned(PC) + 4);
+            
+                when "01" => PC <= I_Br;
+                
+                when "10" => PC <= I_JAL;
                
                 when "11" => PC <= I_JALR;
-                
-                when "00" => PC <= std_logic_vector(unsigned(PC) + 4);
-                
-                when others => null;
             
             end case;
         end if;
            
     end process;
-
+    
+    Instruction_Memory : entity work.instruction_memory 
+    port map (I_clk => I_clk,
+              I_address => PC,
+              O_ins => O_ins);
 
 
 end Behavioral;

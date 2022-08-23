@@ -68,7 +68,7 @@ begin
                         
                    end case;  
                
-               when "010" => --Decided from funct7 (bit 30) and funct3 bits (all R-type + all shifts)
+               when "010" => --Decided from funct7 (bit 30) and funct3 bits (all R-type except shifts)
                     
                     case I_funct is
                         
