@@ -33,7 +33,6 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity reg32_32 is
     Port ( I_clk : in STD_LOGIC;
-           I_en : in STD_LOGIC;
            I_dataC : in STD_LOGIC_VECTOR (31 downto 0);
            O_dataA : out STD_LOGIC_VECTOR (31 downto 0);
            O_dataB: out STD_LOGIC_VECTOR (31 downto 0);
@@ -47,17 +46,15 @@ end reg32_32;
 architecture Behavioral of reg32_32 is
     --Defining the register as an array of 32 'blocks' that each stores 32-bit data
     type registers is array (0 to 31) of std_logic_vector (31 downto 0);
-    signal regs : registers := (others => X"00000000");
+    signal regs : registers := (x"00000000", x"00000110", x"00000001",
+                                others => X"00000000");
 
 begin
     
     process(I_clk)
     begin
-        if rising_edge(I_clk) and I_en = '1' then
-            --Read data from selected registers A and B onto respective data out wires
-            O_dataA <= regs(to_integer(unsigned(I_selA)));
-            O_dataB <= regs(to_integer(unsigned(I_selB)));
-        
+            
+        if rising_edge(I_clk) then
             --If write enable is high, write data to register C as well 
             if I_writen = '1' then
                 regs(to_integer(unsigned(I_selC))) <= I_dataC;
@@ -66,5 +63,8 @@ begin
         end if;
         
    end process;
+   
+   O_dataA <= regs(to_integer(unsigned(I_selA)));
+   O_dataB <= regs(to_integer(unsigned(I_selB)));
 
 end Behavioral;

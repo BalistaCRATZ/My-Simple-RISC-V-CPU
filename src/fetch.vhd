@@ -34,38 +34,50 @@ entity fetch is
            I_Br : in STD_LOGIC_VECTOR (31 downto 0);
            I_JAL : in STD_LOGIC_VECTOR (31 downto 0);
            I_JALR : in STD_LOGIC_VECTOR (31 downto 0);
-           O_ins : out STD_LOGIC_VECTOR (31 downto 0));
+           O_ins : out STD_LOGIC_VECTOR (31 downto 0);
+           O_PC : out std_logic_vector(31 downto 0);
+           O_nextPC: out std_logic_vector(31 downto 0));
 end fetch;
 
 architecture Behavioral of fetch is
 
-signal PC : std_logic_vector(31 downto 0);
+signal PC_buffer : std_logic_vector(31 downto 0):= x"00000000";
+signal nextPC_buffer : std_logic_vector(31 downto 0);
 
 begin
+    
+    nextPC_buffer <= std_logic_vector(unsigned(PC_buffer) + 1); -- Not adding byte addressing yet
 
-    update_pc : process(I_clk)
+    update_pc : process(I_clk, PC_buffer)
     begin
         
         if rising_edge(I_clk) then
         
             case I_PCSel is
             
-                when "00" => PC <= std_logic_vector(unsigned(PC) + 4);
+                when "00" => PC_buffer <= nextPC_buffer;
             
-                when "01" => PC <= I_Br;
+                when "01" => PC_buffer <= I_Br;
                 
-                when "10" => PC <= I_JAL;
+                when "10" => PC_buffer <= I_JAL;
                
-                when "11" => PC <= I_JALR;
+                when "11" => PC_buffer <= I_JALR;
+                
+                when others => null;
             
             end case;
+            
         end if;
            
     end process;
     
+    O_nextPC <= nextPC_buffer;
+    O_PC <= PC_buffer;
+    
+    
     Instruction_Memory : entity work.instruction_memory 
     port map (I_clk => I_clk,
-              I_address => PC,
+              I_address => PC_buffer,
               O_ins => O_ins);
 
 

@@ -33,7 +33,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity control_unit is
     Port ( I_ins : in STD_LOGIC_VECTOR (31 downto 0);
-           O_ALUOp : out STD_LOGIC_VECTOR (1 downto 0);
+           O_ALUOp : out STD_LOGIC_VECTOR (2 downto 0);
            O_ALUSrcImm : out STD_LOGIC;
            O_ALUSrcPC : out STD_LOGIC;
            O_PCSel : out STD_LOGIC_VECTOR (1 downto 0);
@@ -41,6 +41,7 @@ entity control_unit is
            O_MemWrite : out STD_LOGIC;
            O_MemRead : out STD_LOGIC;
            O_WBSel : out STD_LOGIC_VECTOR (1 downto 0));
+
 end control_unit;
 
 architecture Behavioral of control_unit is
@@ -50,7 +51,7 @@ architecture Behavioral of control_unit is
     constant AUIPC : std_logic_vector(6 downto 0) := "0010111";
     constant JAL : std_logic_vector(6 downto 0) := "1101111";
     constant JALR: std_logic_vector(6 downto 0) := "1100111";
-    constant BEQ : std_logic_vector(6 downto 0) := "1100011";
+    constant BR : std_logic_vector(6 downto 0) := "1100011";
     constant LW : std_logic_vector(6 downto 0) := "0000011";
     constant SW : std_logic_vector(6 downto 0) := "0100011";
     constant AL_I : std_logic_vector(6 downto 0) := "0010011";
@@ -100,7 +101,7 @@ begin
                 O_RegWrite <= '1';
                 O_WBSel <= "10";
            
-           when BEQ =>
+           when BR =>
                 
                 O_PCSel <= "01";
                 O_ALUOp <= "001";
@@ -109,7 +110,6 @@ begin
                 O_MemWrite <= '0';
                 O_MemRead <= '0';
                 O_RegWrite <= '0';
-                
            
            when LW =>
             
@@ -146,7 +146,7 @@ begin
           when AL_R =>
             
                 O_PCSel <= "00";
-                O_ALUOp <= "011";
+                O_ALUOp <= "010";
                 O_ALUSrcImm <= '0';
                 O_ALUSrcPC <= '0';
                 O_MemWrite <= '0';

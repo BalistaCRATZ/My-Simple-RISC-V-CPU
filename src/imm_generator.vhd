@@ -81,7 +81,7 @@ begin
             
         when J_TYPE =>
             
-            O_imm <= (31 downto 12 => I_ins(31)) & I_ins(19 downto 12) & I_ins(20) & I_ins(30 downto 21) & '0'; --B and J-type immediates are left shifted 1 bit by concatenating a 0 at the end
+            O_imm <= (31 downto 20 => I_ins(31)) & I_ins(19 downto 12) & I_ins(20) & I_ins(30 downto 21) & '0'; --B and J-type immediates are left shifted 1 bit by concatenating a 0 at the end
             
         when others => null;
             

@@ -43,16 +43,17 @@ architecture Behavioral of instruction_memory is
 signal address : std_logic_vector(6 downto 0);
 type rom_t is array(0 to 127) of std_logic_vector(31 downto 0);
 
-constant ROM : rom_t := (others => (others => '0'));
+signal ROM : rom_t := ("00000000011000001000000100010011", 
+                       "01000000000100010000001100110011",
+                       "01101110000100000000100011100011",
+                       others => x"00000000");
 
 begin
     
     address <= I_address(6 downto 0);
     
-    fetch_instruction: process(I_clk)
+    fetch_instruction: process(address)
     begin
-        
-        if rising_edge(I_clk) then
             
             if I_address < x"00000080" then
                 
@@ -60,9 +61,7 @@ begin
                 
             else O_ins <= X"00000000"; --Eventually we want it to throw an exception
             
-            end if;
-            
-        end if;    
+            end if;    
     
     end process;
 

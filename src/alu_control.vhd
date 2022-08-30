@@ -32,22 +32,20 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity alu_control is
-    Port ( I_clk : in STD_LOGIC;
-           I_AluOp : in STD_LOGIC_VECTOR (2 downto 0);
+    Port (I_AluOp : in STD_LOGIC_VECTOR (2 downto 0);
            I_funct : in STD_LOGIC_VECTOR (3 downto 0);
            O_AluFunc : out STD_LOGIC_VECTOR (3 downto 0));
+           
 end alu_control;
 
 architecture Behavioral of alu_control is
 
 begin
 
-    process(I_clk)
+    process(I_AluOp, I_funct)
     
     begin
-        
-        if rising_edge(I_clk) then
-        
+       
             case I_AluOp is
                 
                 when "000" => O_AluFunc <= "0010"; --For Load/Store instructions
@@ -88,7 +86,6 @@ begin
              when others => null;
 
             end case;
-        end if;
     
     end process;
 
