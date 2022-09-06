@@ -52,8 +52,8 @@ architecture Behavioral of control_unit is
     constant JAL : std_logic_vector(6 downto 0) := "1101111";
     constant JALR: std_logic_vector(6 downto 0) := "1100111";
     constant BR : std_logic_vector(6 downto 0) := "1100011";
-    constant LW : std_logic_vector(6 downto 0) := "0000011";
-    constant SW : std_logic_vector(6 downto 0) := "0100011";
+    constant LD : std_logic_vector(6 downto 0) := "0000011";
+    constant ST : std_logic_vector(6 downto 0) := "0100011";
     constant AL_I : std_logic_vector(6 downto 0) := "0010011";
     constant AL_R : std_logic_vector(6 downto 0) := "0110011";
 
@@ -69,6 +69,7 @@ begin
                 O_PCSel <= "00";
                 O_ALUOp <= "100";
                 O_ALUSrcImm <= '1';
+                O_ALUSrcPC <= '1';
                 O_MemWrite <= '0';
                 O_MemRead <= '0';
                 O_RegWrite <= '1';
@@ -88,6 +89,9 @@ begin
            when JAL =>   
                 
                 O_PCSel <= "10";
+                O_ALUOp <= "000";
+                O_ALUSrcImm <= '0';
+                O_ALUSrcPC <= '1';
                 O_MemWrite <= '0';
                 O_MemRead <= '0';
                 O_RegWrite <= '1';
@@ -96,6 +100,9 @@ begin
            when JALR =>   
                 
                 O_PCSel <= "11";
+                O_ALUOp <= "000";
+                O_ALUSrcImm <= '0';
+                O_ALUSrcPC <= '1';
                 O_MemWrite <= '0';
                 O_MemRead <= '0';
                 O_RegWrite <= '1';
@@ -110,8 +117,9 @@ begin
                 O_MemWrite <= '0';
                 O_MemRead <= '0';
                 O_RegWrite <= '0';
+                O_WBSel <= "10";
            
-           when LW =>
+           when LD =>
             
                 O_PCSel <= "00";
                 O_ALUOp <= "000";
@@ -122,7 +130,7 @@ begin
                 O_RegWrite <= '1';
                 O_WBSel <= "00";
            
-           when SW =>
+           when ST =>
             
                 O_PCSel <= "00";
                 O_ALUOp <= "000";
@@ -131,7 +139,8 @@ begin
                 O_MemWrite <= '1';
                 O_MemRead <= '0';
                 O_RegWrite <= '0';
-                
+                O_WBSel <= "10";
+           
            when AL_I =>
             
                 O_PCSel <= "00";
@@ -154,7 +163,16 @@ begin
                 O_RegWrite <= '1';
                 O_WBSel <= "01";
                
-        when others => null;       
+        when others => 
+        --Temporary solution until exceptions introduced
+                O_PCSel <= "00";
+                O_ALUOp <= "010";
+                O_ALUSrcImm <= '0';
+                O_ALUSrcPC <= '0';
+                O_MemWrite <= '0';
+                O_MemRead <= '0';
+                O_RegWrite <= '1';
+                O_WBSel <= "01";     
                 
        end case;
     end process;

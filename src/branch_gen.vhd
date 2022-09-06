@@ -50,7 +50,7 @@ signal BTarg: std_logic_vector(31 downto 0);
 
 begin
 
-    process
+    process(I_BComp, I_BEQ, I_BNE, I_BLT, I_BLTU, I_BGE, I_BGEU, I_PC, I_imm, BTarg)
     begin
     
         BTarg <= std_logic_vector(signed(I_PC)+ signed(I_imm));
@@ -79,7 +79,7 @@ begin
             
             O_BTarg <= BTarg;
         
-        else O_BTarg <= std_logic_vector(unsigned(I_PC) + 4);
+        else O_BTarg <= std_logic_vector(unsigned(I_PC) + 1);
             
         end if;
         

@@ -46,7 +46,7 @@ end reg32_32;
 architecture Behavioral of reg32_32 is
     --Defining the register as an array of 32 'blocks' that each stores 32-bit data
     type registers is array (0 to 31) of std_logic_vector (31 downto 0);
-    signal regs : registers := (x"00000000", x"00000110", x"00000001",
+    signal regs : registers := (x"00000000",
                                 others => X"00000000");
 
 begin

@@ -32,6 +32,8 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity core is
+    Port(clock : in std_logic;
+         O_LEDs : out std_logic_vector (3 downto 0));
 end core;
 
 architecture Behavioral of core is
@@ -47,12 +49,12 @@ signal nextPC: std_logic_vector(31 downto 0);
 signal Br : std_logic_vector(31 downto 0);
 signal JAL : std_logic_vector(31 downto 0);
 signal JALR : std_logic_vector(31 downto 0);
-signal BEQ : std_logic;
-signal BNE : std_logic;
-signal BLT : std_logic;
-signal BGE : std_logic;
-signal BLTU : std_logic;
-signal BGEU : std_logic;
+signal BEQ : std_logic := '0';
+signal BNE : std_logic := '0';
+signal BLT : std_logic := '0';
+signal BGE : std_logic := '0';
+signal BLTU : std_logic := '0';
+signal BGEU : std_logic := '0';
 
 --Control signals
 signal PCSel : std_logic_vector(1 downto 0);
@@ -70,7 +72,6 @@ signal reg_2_val : std_logic_vector(31 downto 0);
 signal AData : std_logic_vector(31 downto 0);
 signal BData : std_logic_vector(31 downto 0);
 signal ALUout : std_logic_vector(31 downto 0);
-signal ALUzero : std_logic;
 
 --Register inputs and outputs
 signal reg_write_data : std_logic_vector(31 downto 0);
@@ -83,6 +84,10 @@ signal mem_data_in : std_logic_vector(31 downto 0);
 constant I_clk_period : time := 10ns;
 
 begin
+    
+    --divider : entity work.clock_divider 
+   -- port map(I_clk => clock, 
+           --  O_clk => clk);
 
     fetch: entity work.fetch
     port map(I_clk => clk,
@@ -113,12 +118,12 @@ begin
    
    --Jump target address generators
    
-   update_jal_address: process
+   update_jal_address: process(PC, generated_immediate)
    begin
         JAL <= std_logic_vector(signed(PC) + signed(generated_immediate));
    end process;
    
-   update_jalr_address: process
+   update_jalr_address: process(reg_1_val, generated_immediate)
    begin
         JALR <= std_logic_vector(signed(reg_1_val) + signed(generated_immediate));
    end process;
@@ -140,15 +145,26 @@ begin
     --ALU source multiplexors
     AData <= reg_2_val when ALUSrcImm = '0' else generated_immediate ;
     BData <= reg_1_val when ALUSrcPC = '0' else PC;
-
-
+    
+    
+    --Branch comparator unit
+   branch_comparator : entity work.comparator
+    port map(I_rs1 => reg_1_val,
+             I_rs2 => reg_2_val,
+             O_BEQ => BEQ,
+             O_BNE => BNE,
+             O_BLT => BLT,
+             O_BGE => BGE,
+             O_BGEU => BGEU,
+             O_BLTU => BLTU);
+        
     alu : entity work.alu
     port map(I_dataA => AData,
              I_dataB => BData,
              I_alufunc => ALUFunc,
-             O_result => ALUout,
-             O_zero => ALUzero);
+             O_result => ALUout);
     
+    --Routing inputs to data memory
     mem_address <= ALUout;
     mem_data_in <= reg_2_val;
     
@@ -158,7 +174,8 @@ begin
              I_MemRead => MemRead,
              I_Address => mem_address,
              I_WriteData => mem_data_in,
-             O_ReadData => mem_data_out);
+             O_ReadData => mem_data_out,
+             I_MemControl => instruction(14 downto 12));
                  
     
     --Writeback multiplexor
@@ -168,12 +185,18 @@ begin
                       nextPC when "10",
                       x"00000000" when others;
     
+    --Stimulate LEDs
+    stim_led: process(ALUout)
+    begin
+        O_LEDs <= ALUout(3 downto 0);
+    end process;
+    
     --Clock process defintions
     clk_process : process
     begin
-        clk <= '0';
-        wait for I_clk_period/2;
         clk <= '1';
+        wait for I_clk_period/2;
+        clk <= '0';
         wait for I_clk_period/2;
    end process;
 

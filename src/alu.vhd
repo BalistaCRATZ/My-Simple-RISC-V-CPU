@@ -35,8 +35,8 @@ entity alu is
     Port (I_dataA : in std_logic_vector (31 downto 0);
            I_dataB : in std_logic_vector (31 downto 0);
            I_alufunc : in std_logic_vector (3 downto 0);
-           O_result : out std_logic_vector (31 downto 0);
-           O_zero : out std_logic);
+           O_result : out std_logic_vector (31 downto 0));
+
            
            
 end alu;
@@ -91,7 +91,7 @@ begin
                      O_result <= I_dataA;
                 
 
-                when others => null;
+                when others => O_result <= x"00000000";
               
             end case;
     

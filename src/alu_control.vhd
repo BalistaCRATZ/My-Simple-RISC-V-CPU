@@ -62,7 +62,7 @@ begin
                         when "110" => O_AluFunc <= "0001"; --ORI
                         when "010" => O_AluFunc <= "0111"; --SLTI
                         when "011" => O_AluFunc <= "1111"; --SLTIU
-                        when others => null;
+                        when others => O_AluFunc <= "1111"; -- until exceptions introduced
                         
                    end case;  
                
@@ -77,13 +77,13 @@ begin
                         when "0110" => O_AluFunc <= "0001"; --OR
                         when "0010" => O_AluFunc <= "0111"; --SLT
                         when "0011" => O_AluFunc <= "1111"; --SLTU
-                        when others => null;
+                        when others => O_AluFunc <= "1111";
     
                    end case;  
              
               when "100" => O_AluFunc <= "0001"; --LUI
               
-             when others => null;
+             when others => O_ALUFunc <= "0000";
 
             end case;
     
